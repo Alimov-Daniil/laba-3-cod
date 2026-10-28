@@ -10,7 +10,6 @@ from scipy.ndimage import (
 )
 
 # 1. Завантаження зображення
-# Шлях до файлу (використовуємо префікс r для коректної обробки слешів Windows)
 image_path = r"C:\Users\alimo\OneDrive\Робочий стіл\Pyton\lab3\stones_1.jpg"
 
 if not os.path.exists(image_path):
@@ -21,12 +20,10 @@ img_gray = Image.open(image_path).convert("L")
 img_gray_arr = np.array(img_gray)
 
 # 3. Порогове перетворення (бінаризація)
-# Поріг підібрано емпірично (130-140 добре виділяє контури світлих каменів)
 threshold = 135
 im_bin = (img_gray_arr > threshold).astype(int)
 
 # 4. Створення структурного елемента: РОМБ (Варіант 1)
-# Генеруємо ромб за допомогою манхеттенської відстані
 radius = 4  # розмір ромба (можна змінювати від 2 до 6)
 y, x = np.ogrid[-radius : radius + 1, -radius : radius + 1]
 struct_diamond = (np.abs(x) + np.abs(y) <= radius).astype(int)
@@ -34,16 +31,14 @@ struct_diamond = (np.abs(x) + np.abs(y) <= radius).astype(int)
 print("Матриця структурного елемента (Ромб):")
 print(struct_diamond)
 
-# Ерозія (звуження світлих ділянок / видалення дрібного шуму)
 im_eroded = binary_erosion(im_bin, structure=struct_diamond)
 
 # 5. Дилатація після ерозії (відновлення розмірів основних каменів)
 im_dilated = binary_dilation(im_eroded, structure=struct_diamond)
 
 # 6. Морфологічне розмикання та замикання
-# Opening: ерозія -> дилатація (прибирає дрібні виступи та тонкі перемички)
 im_opened = binary_opening(im_bin, structure=struct_diamond)
-# Closing: дилатація -> ерозія (заповнює дірки та дрібні проміжки всередині каменів)
+
 im_closed = binary_closing(im_opened, structure=struct_diamond)
 
 # 7. Візуалізація результатів для звіту
@@ -75,7 +70,7 @@ axes[1, 2].axis("off")
 
 plt.tight_layout()
 
-# Збереження готового зведеного малюнка для звіту
+
 output_dir = os.path.dirname(image_path)
 output_file = os.path.join(output_dir, "lab3_results.png")
 plt.savefig(output_file, dpi=300)
